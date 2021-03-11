@@ -5,54 +5,77 @@ Created on Mon Oct 26 17:28:14 2020
 @author: Injo Kim
 """
 from github import Github
-from material import crawling_material
+from material import crawling_material, db_connect
+import numpy as np
 import pandas as pd
-from tqdm import tqdm
+import time
+
+def crawling_data(repo, crawled_data, idx) :
+    contributors = [contributor.id for contributor in repo.get_contributors()]
+    url = repo.url
+    owner_type = crawling_material.find_owner_type(repo.organization)
+    
+    row = [idx, repo.id, repo.name, repo.owner.id, owner_type, repo.created_at, repo.updated_at, repo.get_topics(), repo.language, 
+           contributors, len(contributors), repo.stargazers_count, repo.forks_count, topic, crawling_material.url_organizer(url)]
+    crawled_data.append(row)
+    
+    return crawled_data
 
 
-def url_organizer(url) :
-    return url[0:8] + url[12:23] + url[29:]
+def save_data(crawled_data, idx) :
+    data = crawling_material.data_processing(pd.DataFrame(crawled_data, columns=crawling_material.column), ['topics', 'contributors'])
+    data.to_csv('crawled_data/' + topic + '_' + str(idx) + '.csv', index=False)
 
 
-def search_by_keyword(keywords, topic) :
+def search_by_keyword(keywords, topic, save_point) :
     
     # watchers have error -> print stargazer data 
-    matrix = []
-    
-    for keyword in tqdm(keywords) :
-        for period in crawling_material.periods :
-            query = '+'.join([keyword]) +' created:' + period[0] + '..' + period[1]
-            result = git.search_repositories(query, sort='stars', order='desc')
-                
-            print(f'\n\n Found {result.totalCount} repo(s)')
-            print(query)
-            
-            for repo in tqdm(result) :
-                contributors = [contributor.id for contributor in repo.get_contributors()]
-                url = repo.url
-                
-                if repo.organization == None :
-                    owner_type = 'user'
-                else :
-                    owner_type = 'organization'
-                
-                row = [repo.id, repo.name, repo.owner.id, repo.owner.name, owner_type, repo.created_at, repo.updated_at, repo.get_topics(), repo.language, 
-                       contributors, len(contributors), repo.stargazers_count, repo.forks_count, topic, url_organizer(url)]
-                    
-                matrix.append(row)
+    # variable declare
+    crawled_data = []; tiredness = 0 ; doc_idx = 0; idx = 0
 
-    return pd.DataFrame(matrix, columns=crawling_material.column)
+    for period in crawling_material.periods :
+        for keyword in keywords :
+            if idx < save_point : 
+                idx += crawling_material.number_of_repos[keyword][period[0]]
+                break
+            
+            else :
+                count_per_iteration = 0
+                query = '+'.join([keyword]) +' created:' + period[0] + '..' + period[1]
+                result = git.search_repositories(query, sort='stars', order='desc')
+                
+                for repo in result :
+                    crawled_data = crawling_data(repo, crawled_data, idx)
+                        
+                    print('{0} \t keyword : {1}, period : {2}-{3} \t {4}th data crawling out of {5} total data \t tiredness : {6}'.format(idx, keyword, period[0], period[1], 
+                                                                                                                                          result.totalCount, count_per_iteration, tiredness))
+                    count_per_iteration += 1
+                    
+                    time.sleep(np.random.random())
+                    tiredness += 1
+                    idx += 1
+                    if tiredness == 300 :
+                        save_data(crawled_data, doc_idx)
+                        tiredness = crawling_material.rest(crawled_data, tiredness)
+                        doc_idx+=1
+    
+                        #connection = db_connect.db_connect()
+                        #db_connect.send_data_to_db(connection, data)
+
+    save_data(crawled_data, doc_idx)
 
 
 if __name__ == '__main__' :
    
     # set constant 
-    ACCESS_TOKEN = open('material/access_token.txt', 'r').read()
-    git = Github(ACCESS_TOKEN)
+    ACCESS_TOKEN = open('material/access_token.txt', 'r').readlines()
+    INJO_TOKEN = ACCESS_TOKEN[0][:-1] ; JUNGMIN_TOKEN = ACCESS_TOKEN[1]
+    SAVE_POINT = 0
+    
+    git = Github(INJO_TOKEN)
 
     for topic in crawling_material.topics :
-        data = search_by_keyword(crawling_material.keywords[topic], topic)
-        data.to_csv('crawled_data/' + topic + '.csv', index=False)
+        search_by_keyword(crawling_material.keywords[topic], topic, SAVE_POINT)
 
     del topic, git
         
