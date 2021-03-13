@@ -21,7 +21,7 @@ user_column = ['total_index', 'user_id', 'user_name', 'repo_list', 'repo_count',
 
 
 keywords = {'image-processing' : ['vision', 'image processing', 'image recognition'], 'nlp' : ['nlp'], 'speech-recognition' : ['speech recognition'],
-            'artificial-intelligence' : ['artificial intelligence', 'machine learning','deep learning'], 'autonomous-vehicle' : ['autonomous vehicle'],
+            'artificial-intelligence' : ['artificial intelligence'], 'mahcine-learning' : ['machine learning'], 'deep-learning' : ['deep learning'], 'autonomous-vehicle' : ['autonomous vehicle'],
             'auto-ml' : ['automl']}
 
 number_of_repos = {'vision' : {'2015-01-01' : 1292, '2015-07-01' : 1398, '2016-01-01' : 2141, '2016-07-01' : 2459, '2017-01-01' : 3928, '2017-07-01' : 4456, '2018-01-01' : 5556, '2018-07-01' : 5658,

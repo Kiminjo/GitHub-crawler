@@ -115,9 +115,9 @@ if __name__ == '__main__' :
 
 
 # topics 
-# image-processing, nlp, artificial-intelligence, autonomous-vehicle, speech-recognition
-# completed : automl 
-
+# nlp, artificial-intelligence, machine-leaning, deep-learning, autonomous-vehicle
+# completed : 
+# processed : image-processing, automl, speech-recognition
     topic = 'auto-ml'
     search_by_keyword(crawling_material.keywords[topic], topic, SAVE_POINT)
 
