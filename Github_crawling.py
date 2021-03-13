@@ -5,7 +5,7 @@ Created on Mon Oct 26 17:28:14 2020
 @author: Injo Kim
 """
 from github import Github
-from material import crawling_material, db_connect
+from material import crawling_material
 import numpy as np
 import pandas as pd
 import time
@@ -16,8 +16,16 @@ def crawling_data(repo, crawled_data, idx) :
     url = repo.url
     owner_type = crawling_material.find_owner_type(repo.organization)
     
-    row = [idx, repo.id, repo.name, repo.owner.id, owner_type, repo.created_at, repo.updated_at, repo.get_topics(), repo.language, 
-           contributors, len(contributors), repo.stargazers_count, repo.forks_count, topic, crawling_material.url_organizer(url)]
+    try :
+        row = [idx, repo.id, repo.name, repo.owner.id, owner_type, repo.full_name, repo.created_at, repo.updated_at, repo.get_topics(), repo.language, 
+               contributors, len(contributors), repo.stargazers_count, repo.forks_count, topic, crawling_material.url_organizer(url), repo.get_readme().size, repo.fork, 
+               repo.open_issues, repo.parent]
+        
+    except :
+        row = [idx, repo.id, repo.name, repo.owner.id, owner_type, repo.full_name, repo.created_at, repo.updated_at, repo.get_topics(), repo.language, 
+               contributors, len(contributors), repo.stargazers_count, repo.forks_count, topic, crawling_material.url_organizer(url), None, repo.fork, 
+               repo.open_issues, repo.parent]
+    
     crawled_data.append(row)
     
     return crawled_data
@@ -63,7 +71,7 @@ def search_by_keyword(keywords, topic, save_point) :
     
     # watchers have error -> print stargazer data 
     # variable declare
-    crawled_data = []; tiredness = 0 ; doc_idx = 11; idx = 0
+    crawled_data = []; tiredness = 0 ; doc_idx = 0; idx = 0
 
     for period in crawling_material.periods :
         for keyword in keywords :
@@ -90,11 +98,8 @@ def search_by_keyword(keywords, topic, save_point) :
                         save_data(crawled_data, doc_idx, mode='repo')
                         tiredness = crawling_material.rest(tiredness)
                         doc_idx+=1
-    
-                        #connection = db_connect.db_connect()
-                        #db_connect.send_data_to_db(connection, data)
                         
-    save_data(crawled_data, doc_idx)
+    save_data(crawled_data, doc_idx, mode='repo')
 
 
 
@@ -103,13 +108,18 @@ if __name__ == '__main__' :
    
     # set constant 
     ACCESS_TOKEN = open('material/access_token.txt', 'r').readlines()
-    INJO_TOKEN = ACCESS_TOKEN[0][:-1] ; JUNGMIN_TOKEN = ACCESS_TOKEN[1][:-1]; SEONGSEOP_TOKEN = ACCESS_TOKEN[2][:-1]; SAEROME_TOKEN = ACCESS_TOKEN[3]
-    SAVE_POINT = 3000
+    INJO_TOKEN = ACCESS_TOKEN[0][:-1] ; JUNGMIN_TOKEN = ACCESS_TOKEN[1][:-1]
+    SAVE_POINT = 0
     
     git = Github(INJO_TOKEN)
 
-    for topic in crawling_material.topics :
-        search_by_keyword(crawling_material.keywords[topic], topic, SAVE_POINT)
+
+# topics 
+# image-processing, nlp, artificial-intelligence, autonomous-vehicle, speech-recognition
+# completed : automl 
+
+    topic = 'auto-ml'
+    search_by_keyword(crawling_material.keywords[topic], topic, SAVE_POINT)
 
     del topic, git
         
