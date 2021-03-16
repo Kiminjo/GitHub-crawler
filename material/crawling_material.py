@@ -4,25 +4,24 @@ Created on Tue Mar  9 22:19:14 2021
 
 @author: user
 """
+import datetime
 import time
     
-# variable declare
-
- 
-periods = [['2015-01-01', '2015-06-30'], ['2015-07-01', '2015-12-31'], ['2016-01-01', '2016-06-30'], ['2016-07-01', '2016-12-31'], ['2017-01-01', '2017-06-30'], 
-           ['2017-07-01', '2017-12-31'], ['2018-01-01', '2018-06-30'], ['2018-07-01', '2018-12-31'], ['2019-01-01', '2019-06-30'], ['2019-07-01', '2019-12-31'], 
-           ['2020-01-01', '2020-06-30'], ['2020-07-01', '2020-12-31'], ['2021-01-01', '2021-03-10']]
-
+# variable declare   
+        
 repository_column = ['total_index', 'repo_id', 'repo_name', 'owner_id', 'owner_type', 'full_name', 'create_date', 'update_date', 'topics', 'language', 'contributors', 'contributor_counts',  
           'stargazer_counts', 'forker_counts', 'keyword', 'readme_url', 'read_length', 'is_it_forked_repo', 'open_issues', 'original_repo']
 
 user_column = ['total_index', 'user_id', 'user_name', 'repo_list', 'repo_count', 'company', 'email', 'location', 'followers', 'follower_count', 'following', 'following_count', 
                'organization_list', 'contributed_repo_count', 'forked_repo', 'forked_repo_count', 'readme_size', 'url']
 
-
-keywords = {'image-processing' : ['vision', 'image processing', 'image recognition'], 'nlp' : ['nlp'], 'speech-recognition' : ['speech recognition'],
-            'artificial-intelligence' : ['artificial intelligence'], 'mahcine-learning' : ['machine learning'], 'deep-learning' : ['deep learning'], 'autonomous-vehicle' : ['autonomous vehicle'],
+'''
+keywords = {'image-processing' : ['computer vision'], 'nlp' : ['nlp'], 'speech-recognition' : ['speech recognition'],
+            'artificial-intelligence' : ['artificial intelligence'], 'machine-learning' : ['machine learning'], 'deep-learning' : ['deep learning'], 'autonomous-vehicle' : ['autonomous vehicle'],
             'auto-ml' : ['automl']}
+'''
+keywords = ['computer vision', 'nlp', 'speech recognition', 'artificial intelligence', 'machine learning', 'deep learning', 'autonomous vehicle', 'automl']
+
 
 number_of_repos = {'vision' : {'2015-01-01' : 1292, '2015-07-01' : 1398, '2016-01-01' : 2141, '2016-07-01' : 2459, '2017-01-01' : 3928, '2017-07-01' : 4456, '2018-01-01' : 5556, '2018-07-01' : 5658,
                                '2019-01-01' : 7025, '2019-07-01' : 7022, '2020-01-01' :9412 , '2020-07-01' : 8949}, 
@@ -82,6 +81,23 @@ def rest(tiredness) :
     print('crawling process get in rest')
     
     tiredness = 0
-    time.sleep(400)
+    time.sleep(500)
     
     return tiredness
+
+
+def make_periods_list(year) :
+    start = datetime.date(year,1,1)
+    if year == 2016 or year == 2020 :
+        date = 366
+    else :
+        date = 365
+        
+    date_result = [(start + datetime.timedelta(days=day)).isoformat() for day in range(date)]
+        
+    return date_result
+            
+    
+            
+    
+    

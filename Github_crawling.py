@@ -11,22 +11,26 @@ import pandas as pd
 import time
 
 #%%
-def crawling_data(repo, crawled_data, idx) :
-    contributors = [contributor.id for contributor in repo.get_contributors()]
-    url = repo.url
-    owner_type = crawling_material.find_owner_type(repo.organization)
-    
+def crawling_data(repo, crawled_data, idx, keyword) :
     try :
-        row = [idx, repo.id, repo.name, repo.owner.id, owner_type, repo.full_name, repo.created_at, repo.updated_at, repo.get_topics(), repo.language, 
-               contributors, len(contributors), repo.stargazers_count, repo.forks_count, topic, crawling_material.url_organizer(url), repo.get_readme().size, repo.fork, 
+    	contributors = [contributor.id for contributor in repo.get_contributors()]
+    	url = repo.url
+    	owner_type = crawling_material.find_owner_type(repo.organization)
+    
+    	try :
+            row = [idx, repo.id, repo.name, repo.owner.id, owner_type, repo.full_name, repo.created_at, repo.updated_at, repo.get_topics(), repo.language, 
+               contributors, len(contributors), repo.stargazers_count, repo.forks_count, keyword, crawling_material.url_organizer(url), repo.get_readme().size, repo.fork, 
                repo.open_issues, repo.parent]
         
-    except :
-        row = [idx, repo.id, repo.name, repo.owner.id, owner_type, repo.full_name, repo.created_at, repo.updated_at, repo.get_topics(), repo.language, 
-               contributors, len(contributors), repo.stargazers_count, repo.forks_count, topic, crawling_material.url_organizer(url), None, repo.fork, 
+    	except :
+        	row = [idx, repo.id, repo.name, repo.owner.id, owner_type, repo.full_name, repo.created_at, repo.updated_at, repo.get_topics(), repo.language, 
+               contributors, len(contributors), repo.stargazers_count, repo.forks_count, keyword, crawling_material.url_organizer(url), None, repo.fork, 
                repo.open_issues, repo.parent]
     
-    crawled_data.append(row)
+    	crawled_data.append(row)
+        
+    except :
+        print('error occur')
     
     return crawled_data
 
@@ -56,50 +60,54 @@ def crawling_user(user_list) :
             doc_idx += 1
         
     
-def save_data(crawled_data, idx, mode) :
+def save_data(crawled_data, year, mode) :
     
     if mode == 'repo' :
         data = crawling_material.data_processing(pd.DataFrame(crawled_data, columns=crawling_material.repository_column), ['topics', 'contributors'])
-        data.to_csv('crawled_data/' + topic + '_' + str(idx) + '.csv', index=False)
+        data.to_csv('crawled_data/data' + '_' + str(year)  + '.csv', mode='a', index=False, header=False)
         
     elif mode == 'user' :
         data = crawling_material.data_processing(pd.DataFrame(crawled_data, columns=crawling_material.user_column), ['repo_id', 'followers', 'following', 'organization_list'])
-        data.to_csv('crawled_data/user_' + str(idx) + '.csv', index=False)
+        data.to_csv('crawled_data/user_' + str(year) + '.csv', index=False)
 
 
-def search_by_keyword(keywords, topic, save_point) :
+def search_by_keyword(year, save_point) :
     
     # watchers have error -> print stargazer data 
     # variable declare
     crawled_data = []; tiredness = 0 ; doc_idx = 0; idx = 0
-
-    for period in crawling_material.periods :
-        for keyword in keywords :
+    
+    for period in crawling_material.make_periods_list(year) :  
+        for keyword in crawling_material.keywords :
             if idx < save_point : 
-                idx += crawling_material.number_of_repos[keyword][period[0]]
+                idx += crawling_material.number_of_repos[keyword][period]
                 break
             
             else :
-                count_per_iteration = 0
-                query = '+'.join([keyword]) +' created:' + period[0] + '..' + period[1]
-                result = git.search_repositories(query, sort='stars', order='desc')
-                
-                for repo in result :
-                    crawled_data = crawling_data(repo, crawled_data, idx)
-                        
-                    print('{0} \t keyword : {1}, period : {2}-{3} \t {4}th data crawling out of {5} total data \t tiredness : {6}'.format(idx, keyword, period[0], period[1], 
-                                                                                                                                          result.totalCount, count_per_iteration, tiredness))
-                    count_per_iteration += 1
+                try :
+                    count_per_iteration = 0
+                    query = '+'.join([keyword]) +' created:' + str(period)
+                    result = git.search_repositories(query, sort='stars', order='desc')
                     
-                    time.sleep(np.random.random())
-                    tiredness += 1
-                    idx += 1
-                    if tiredness == 300 :
-                        save_data(crawled_data, doc_idx, mode='repo')
-                        tiredness = crawling_material.rest(tiredness)
-                        doc_idx+=1
+                    for repo in result :
+                        crawled_data = crawling_data(repo, crawled_data, idx, keyword)
+                            
+                        print('{0} \t keyword : {1}, period : {2} \t {3}th data crawling out of {4} total data \t tiredness : {5}'.format(idx, keyword, period, 
+                                                                                                                                              result.totalCount, count_per_iteration, tiredness))
+                        count_per_iteration += 1
                         
-    save_data(crawled_data, doc_idx, mode='repo')
+                        time.sleep(np.random.random())
+                        tiredness += 1
+                        idx += 1
+                        if tiredness == 300 :
+                            save_data(crawled_data, year, mode='repo')
+                            tiredness = crawling_material.rest(tiredness)
+                            doc_idx+=1
+                            crawled_data.clear()
+                except :
+                    print('repository does not exist')
+                    
+    save_data(crawled_data, year, mode='repo')
 
 
 
@@ -108,18 +116,17 @@ if __name__ == '__main__' :
    
     # set constant 
     ACCESS_TOKEN = open('material/access_token.txt', 'r').readlines()
-    INJO_TOKEN = ACCESS_TOKEN[0][:-1] ; JUNGMIN_TOKEN = ACCESS_TOKEN[1][:-1]
+    INJO_TOKEN = ACCESS_TOKEN[0][:-1] ; JUNGMIN_TOKEN = ACCESS_TOKEN[1][:-1]; JAEHAN_TOKEN = ACCESS_TOKEN[3]
     SAVE_POINT = 0
     
-    git = Github(INJO_TOKEN)
+    git = Github(JAEHAN_TOKEN)
 
 
-# topics 
-# nlp, artificial-intelligence, machine-leaning, deep-learning, autonomous-vehicle
-# completed : 
-# processed : image-processing, automl, speech-recognition
-    topic = 'auto-ml'
-    search_by_keyword(crawling_material.keywords[topic], topic, SAVE_POINT)
+    # topics 
+    # machine-leaning
+    # processed : image-processing, deep-learning
+    # complete : aritificial-intelligence, autonomous-vehicle, automl, nlp, speech-recognition
+    search_by_keyword(2015, SAVE_POINT)
 
-    del topic, git
+    del git
         
