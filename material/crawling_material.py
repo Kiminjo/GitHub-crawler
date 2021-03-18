@@ -81,19 +81,17 @@ def rest(tiredness) :
     print('crawling process get in rest')
     
     tiredness = 0
-    time.sleep(500)
+    #time.sleep(500)
     
     return tiredness
 
 
-def make_periods_list(year) :
-    start = datetime.date(year,1,1)
-    if year == 2016 or year == 2020 :
-        date = 366
-    else :
-        date = 365
+def make_periods_list(start, end) :
+    start = datetime.date(int(start.split('-')[0]), int(start.split('-')[1]), int(start.split('-')[2]))
+    end = datetime.date(int(end.split('-')[0]), int(end.split('-')[1]), int(end.split('-')[2]))
+    time_delta = end - start
         
-    date_result = [(start + datetime.timedelta(days=day)).isoformat() for day in range(date)]
+    date_result = [(start + datetime.timedelta(days=day)).isoformat() for day in range(time_delta.days)]
         
     return date_result
             

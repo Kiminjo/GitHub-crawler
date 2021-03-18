@@ -65,19 +65,20 @@ def save_data(crawled_data, year, mode) :
     if mode == 'repo' :
         data = crawling_material.data_processing(pd.DataFrame(crawled_data, columns=crawling_material.repository_column), ['topics', 'contributors'])
         data.to_csv('crawled_data/data' + '_' + str(year)  + '.csv', mode='a', index=False, header=False)
+        print('csv saved \n')
         
     elif mode == 'user' :
         data = crawling_material.data_processing(pd.DataFrame(crawled_data, columns=crawling_material.user_column), ['repo_id', 'followers', 'following', 'organization_list'])
         data.to_csv('crawled_data/user_' + str(year) + '.csv', index=False)
 
 
-def search_by_keyword(year, save_point) :
+def search_by_keyword(start_date, end_date, save_point) :
     
     # watchers have error -> print stargazer data 
     # variable declare
     crawled_data = []; tiredness = 0 ; doc_idx = 0; idx = 0
     
-    for period in crawling_material.make_periods_list(year) :  
+    for period in crawling_material.make_periods_list(start_date, end_date) :  
         for keyword in crawling_material.keywords :
             if idx < save_point : 
                 idx += crawling_material.number_of_repos[keyword][period]
@@ -99,15 +100,16 @@ def search_by_keyword(year, save_point) :
                         time.sleep(np.random.random())
                         tiredness += 1
                         idx += 1
-                        if tiredness == 300 :
-                            save_data(crawled_data, year, mode='repo')
+                        if tiredness == 300 or tiredness == 600 :
+                            save_data(crawled_data, start_date[:4], mode='repo')
                             tiredness = crawling_material.rest(tiredness)
                             doc_idx+=1
                             crawled_data.clear()
                 except :
                     print('repository does not exist')
                     
-    save_data(crawled_data, year, mode='repo')
+    save_data(crawled_data, start_date[:4], mode='repo')
+
 
 
 
@@ -126,7 +128,7 @@ if __name__ == '__main__' :
     # machine-leaning
     # processed : image-processing, deep-learning
     # complete : aritificial-intelligence, autonomous-vehicle, automl, nlp, speech-recognition
-    search_by_keyword(2015, SAVE_POINT)
+    search_by_keyword('2016-01-01', '2016-12-31', SAVE_POINT)
 
     del git
         
