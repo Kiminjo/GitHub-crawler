@@ -1,17 +1,20 @@
 # GitHub crawler
 
-## 1. 프로젝트 소개 
-- 이 프로그램은 저의 석사학위 연구를 위한 GitHub 데이터 수집용 크롤러입니다.
-- 본 크롤러로 수집된 데이터를  수행된 저의 석사학위 연구는 [여기](https://github.com/Kiminjo/predicting-tech-evolution-pattern-GNN)에서 확인해주세요.
-- 목적 : GitHub의 repository 및 user 정보를 수집하기 위함
+Crawler for crawling github repository information for master's degree research
+<br></br>
 
+## Crawling GitHub repositories
+In this project, I crawled github repositories related autonomous vehicle for my master's degree research. I used `PyGitHub` for crawling, if you want to know more about this library, please check [here](https://pygithub.readthedocs.io/en/latest/introduction.html).
+
+If you would like to know more about my degree research conducted using the data collected through this crawler, please check [here](https://github.com/Kiminjo/Technology-forecasting-using-GNN).
 <br></br>
 
 
-## 2. 수집 데이터 
-|데이터        |데이터 타입|
+## Crawled features
+
+|data        |data type|
 |:---:        |:---:|
-|repository 명|str|
+|repository name|str|
 |repository ID|int|
 |owner ID|int|
 |owner type|str|
@@ -25,19 +28,23 @@
 |last updated datae|date|
 |readme|str|
 
-
-repository full name : "user name/repository name"
-
 <br></br>
 
-## 3. 실행 방법 
-- `crawling material.py` 에서 수집하고자 하는 키워드 지정 
-- `Github crawling.py` 의 main 내에서 수집하고자 하는 범위 지정 
-- `python Github_crawling.py` 실행 
+## How to Run
+
+### Preliminaries
+- Specify the keywords you want to collect in `crawling_material.py`
+
+- Specify the date range you want to collect in main of `Github_crawling.py`
+
+
+
+### Run the code
+Run `python Github_crawling.py` in terminal  
+
 <br></br>
-
-
-## 4. 구동 환경
+## Software Requirements
 - python >= 3.5
-- PyGithub 
-- pandas >= 1.0.1 
+- PyGithub
+- pandas 
+- numpy
